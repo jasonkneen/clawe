@@ -143,7 +143,11 @@ describe("POST /api/webhooks/stripe", () => {
   it("processes valid webhook", async () => {
     // Mock signature verification
     vi.mock("stripe", () => ({
-      webhooks: { constructEvent: vi.fn().mockReturnValue({ type: "payment_intent.succeeded" }) },
+      webhooks: {
+        constructEvent: vi
+          .fn()
+          .mockReturnValue({ type: "payment_intent.succeeded" }),
+      },
     }));
 
     const request = new Request("http://localhost/api/webhooks/stripe", {

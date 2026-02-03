@@ -181,13 +181,13 @@ src/
 
 ### What to Test
 
-| Type | Test With | Example |
-|------|-----------|---------|
-| Utility functions | Vitest | `formatDate.spec.ts` |
-| React hooks | `@testing-library/react` | `use-board.spec.ts` |
-| Components | `@testing-library/react` | `task-card.spec.tsx` |
-| Server actions | Vitest + mocks | `actions.spec.ts` |
-| API routes | Vitest + fetch mocks | `route.spec.ts` |
+| Type              | Test With                | Example              |
+| ----------------- | ------------------------ | -------------------- |
+| Utility functions | Vitest                   | `formatDate.spec.ts` |
+| React hooks       | `@testing-library/react` | `use-board.spec.ts`  |
+| Components        | `@testing-library/react` | `task-card.spec.tsx` |
+| Server actions    | Vitest + mocks           | `actions.spec.ts`    |
+| API routes        | Vitest + fetch mocks     | `route.spec.ts`      |
 
 ### Component Test Example
 
