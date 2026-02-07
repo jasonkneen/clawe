@@ -60,4 +60,4 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: Record<string, unknown>;
+export declare const components: {};

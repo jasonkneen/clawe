@@ -90,7 +90,7 @@
     }
   },
   "gateway": {
-    "port": ${OPENCLAW_PORT:-18789},
+    "port": ${OPENCLAW_PORT},
     "mode": "local",
     "bind": "lan",
     "auth": {

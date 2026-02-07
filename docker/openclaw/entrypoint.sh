@@ -44,7 +44,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     export OPENCLAW_TOKEN="${TOKEN}"
     export CONVEX_URL="${CONVEX_URL:-}"
     
-    envsubst < "$TEMPLATES_DIR/config.template.json" > "$CONFIG_FILE"
+    envsubst '$OPENCLAW_PORT $OPENCLAW_TOKEN $CONVEX_URL' < "$TEMPLATES_DIR/config.template.json" > "$CONFIG_FILE"
     
     echo "==> Setup complete."
 else
