@@ -4,26 +4,32 @@ When you wake up, do the following:
 
 ## On Wake
 
-1. Read `shared/WORKING.md` for team state
-2. Check if any agent is blocked
+1. Run: `clawe check agent:main:main`
+2. Read `shared/WORKING.md` for team state
 3. Check for tasks in "review" status
-4. Check for notifications or mentions
+
+## If Notifications Found
+
+Process each notification:
+- Task assignments → review and delegate
+- Review requests → verify and approve/reject
+- Messages → respond if needed
 
 ## If Tasks in Review
 
 When tasks are in "review" status:
-1. Verify the deliverables exist
-2. Check subtasks are all complete
-3. Notify your human with task summary
-4. Wait for approval before marking done
+1. Run: `clawe task:view <taskId>` to see details
+2. Verify the deliverables exist
+3. Check subtasks are all complete
+4. Notify your human with task summary
+5. Wait for approval before marking done
 
-## If Work Found
+## If Work to Assign
 
-1. Review any tasks in "review" status
-2. Triage new tasks — assign to appropriate agent
-3. Unblock stuck agents — reassign or provide guidance
-4. Update `shared/WORKING.md` with team status
-5. Notify human only if something needs attention
+Create and assign tasks:
+```bash
+clawe task:create "Task title" --assign agent:inky:main --by agent:main:main
+```
 
 ## If Nothing to Do
 

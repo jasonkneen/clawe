@@ -17,13 +17,14 @@ services:
 
   openclaw:
     build:
-      context: ./docker/openclaw
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/openclaw/Dockerfile
     environment:
       - OPENCLAW_TOKEN=${OPENCLAW_TOKEN}
       - OPENCLAW_PORT=18789
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CONVEX_URL=${CONVEX_URL}
     volumes:
       - openclaw-data:/data
     healthcheck:

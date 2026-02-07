@@ -15,14 +15,21 @@ RUN npm install -g openclaw@latest
 RUN mkdir -p /data/config /data/workspace
 
 # Copy templates and scripts
-COPY templates/ /opt/clawe/templates/
-COPY scripts/ /opt/clawe/scripts/
+COPY docker/openclaw/templates/ /opt/clawe/templates/
+COPY docker/openclaw/scripts/ /opt/clawe/scripts/
 RUN chmod +x /opt/clawe/scripts/*.sh
+
+# Copy and install CLI (pre-built)
+COPY packages/cli/ /opt/clawe/cli/
+COPY packages/backend/convex/_generated/ /opt/clawe/cli/node_modules/@clawe/backend/convex/_generated/
+RUN cd /opt/clawe/cli && npm install --omit=dev 2>/dev/null || true
+RUN ln -sf /opt/clawe/cli/bin/clawe.js /usr/local/bin/clawe
+RUN chmod +x /opt/clawe/cli/bin/clawe.js
 
 ENV OPENCLAW_STATE_DIR=/data/config
 ENV OPENCLAW_PORT=18789
 
-COPY entrypoint.sh /entrypoint.sh
+COPY docker/openclaw/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
