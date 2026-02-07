@@ -115,11 +115,12 @@ export const send = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    const targetKey = args.targetSessionKey;
     
     // Find target agent
     const targetAgent = await ctx.db
       .query("agents")
-      .withIndex("by_sessionKey", (q) => q.eq("sessionKey", args.targetSessionKey))
+      .withIndex("by_sessionKey", (q) => q.eq("sessionKey", targetKey))
       .first();
     
     if (!targetAgent) {
@@ -129,9 +130,10 @@ export const send = mutation({
     // Find source agent if provided
     let sourceAgentId = undefined;
     if (args.sourceSessionKey) {
+      const sourceKey = args.sourceSessionKey;
       const sourceAgent = await ctx.db
         .query("agents")
-        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", args.sourceSessionKey))
+        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", sourceKey))
         .first();
       if (sourceAgent) {
         sourceAgentId = sourceAgent._id;
@@ -186,9 +188,10 @@ export const sendToMany = mutation({
     // Find source agent if provided
     let sourceAgentId = undefined;
     if (args.sourceSessionKey) {
+      const sourceKey = args.sourceSessionKey;
       const sourceAgent = await ctx.db
         .query("agents")
-        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", args.sourceSessionKey))
+        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", sourceKey))
         .first();
       if (sourceAgent) {
         sourceAgentId = sourceAgent._id;

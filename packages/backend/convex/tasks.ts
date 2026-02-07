@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 // List all tasks with optional filters
 export const list = query({
@@ -179,7 +180,7 @@ export const create = mutation({
     const now = Date.now();
     
     // Find assignee if provided
-    let assigneeIds: string[] = [];
+    let assigneeIds: Id<"agents">[] = [];
     if (args.assigneeSessionKey) {
       const assignee = await ctx.db
         .query("agents")
@@ -225,7 +226,8 @@ export const create = mutation({
     
     // Send notification to assignee
     if (assigneeIds.length > 0) {
-      const assignee = await ctx.db.get(assigneeIds[0]);
+      const firstAssigneeId = assigneeIds[0]!;
+      const assignee = await ctx.db.get(firstAssigneeId);
       if (assignee) {
         await ctx.db.insert("notifications", {
           targetAgentId: assignee._id,
@@ -326,7 +328,7 @@ export const assign = mutation({
     if (!task) throw new Error("Task not found");
     
     // Find assignees
-    const assigneeIds: string[] = [];
+    const assigneeIds: Id<"agents">[] = [];
     for (const sessionKey of args.assigneeSessionKeys) {
       const agent = await ctx.db
         .query("agents")
@@ -490,8 +492,11 @@ export const updateSubtask = mutation({
     }
     
     const subtasks = [...task.subtasks];
+    const currentSubtask = subtasks[args.subtaskIndex]!;
     subtasks[args.subtaskIndex] = {
-      ...subtasks[args.subtaskIndex],
+      title: currentSubtask.title,
+      description: currentSubtask.description,
+      assigneeId: currentSubtask.assigneeId,
       done: args.done,
       doneAt: args.done ? now : undefined,
     };
@@ -516,11 +521,12 @@ export const updateSubtask = mutation({
         }
       }
       
+      const completedSubtask = subtasks[args.subtaskIndex]!;
       await ctx.db.insert("activities", {
         type: "subtask_completed",
         agentId,
         taskId: args.taskId,
-        message: `${agentName} completed "${subtasks[args.subtaskIndex].title}" on "${task.title}"`,
+        message: `${agentName} completed "${completedSubtask.title}" on "${task.title}"`,
         createdAt: now,
       });
     }

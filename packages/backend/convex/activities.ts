@@ -141,9 +141,10 @@ export const logBySession = mutation({
     let agentId = undefined;
     
     if (args.sessionKey) {
+      const sessionKey = args.sessionKey;
       const agent = await ctx.db
         .query("agents")
-        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", args.sessionKey))
+        .withIndex("by_sessionKey", (q) => q.eq("sessionKey", sessionKey))
         .first();
       if (agent) {
         agentId = agent._id;

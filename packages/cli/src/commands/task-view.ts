@@ -27,9 +27,9 @@ export async function taskView(taskId: string): Promise<void> {
   if (task.subtasks && task.subtasks.length > 0) {
     const done = task.subtasks.filter((s) => s.done).length;
     console.log(`📋 Subtasks (${done}/${task.subtasks.length}):`);
-    task.subtasks.forEach((st, i) => {
+    task.subtasks.forEach((st: { done: boolean; title: string; assignee?: { emoji?: string; name: string } | null }, i: number) => {
       const check = st.done ? "✅" : "⬜";
-      const assignee = st.assignee ? ` → ${st.assignee.emoji} ${st.assignee.name}` : "";
+      const assignee = st.assignee ? ` → ${st.assignee.emoji || ""} ${st.assignee.name}` : "";
       console.log(`   ${i}. ${check} ${st.title}${assignee}`);
     });
     console.log();

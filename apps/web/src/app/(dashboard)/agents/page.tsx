@@ -7,8 +7,8 @@ import {
   PageHeaderRow,
   PageHeaderTitle,
 } from "@dashboard/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@clawe/ui/card";
-import { Badge } from "@clawe/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@clawe/ui/components/card";
+import { Badge } from "@clawe/ui/components/badge";
 
 const statusColors = {
   idle: "bg-gray-500",
