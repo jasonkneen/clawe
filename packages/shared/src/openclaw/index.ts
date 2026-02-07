@@ -7,6 +7,7 @@ export {
   patchConfig,
   listSessions,
   sendMessage,
+  sessionsSend,
 } from "./client";
 
 // Gateway Client

@@ -153,3 +153,16 @@ export async function sendMessage(
 ): Promise<ToolResult<{ messageId: string }>> {
   return invokeTool("message", undefined, { channel, target, message });
 }
+
+// Sessions - Send message to an agent session
+export async function sessionsSend(
+  sessionKey: string,
+  message: string,
+  timeoutSeconds?: number,
+): Promise<ToolResult<{ response: string }>> {
+  return invokeTool("sessions_send", undefined, {
+    sessionKey,
+    message,
+    timeoutSeconds: timeoutSeconds ?? 10,
+  });
+}

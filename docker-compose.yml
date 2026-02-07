@@ -34,6 +34,19 @@ services:
       retries: 10
     restart: unless-stopped
 
+  watcher:
+    build:
+      context: .
+      dockerfile: apps/watcher/Dockerfile
+    environment:
+      - CONVEX_URL=${CONVEX_URL}
+      - OPENCLAW_URL=http://openclaw:18789
+      - OPENCLAW_TOKEN=${OPENCLAW_TOKEN}
+    depends_on:
+      openclaw:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   openclaw-data:
     driver: local
