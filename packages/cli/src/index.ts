@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { check } from "./commands/check.js";
 import { tasks } from "./commands/tasks.js";
 import { taskCreate } from "./commands/task-create.js";
