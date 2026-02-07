@@ -17,6 +17,7 @@ import {
   cronList,
   cronAdd,
   type CronAddJob,
+  type CronJob,
 } from "@clawe/shared/openclaw";
 import { validateEnv, config, POLL_INTERVAL_MS } from "./config.js";
 
@@ -102,7 +103,7 @@ async function setupCrons(): Promise<void> {
     return;
   }
 
-  const existingNames = new Set(result.result.jobs.map((j) => j.name));
+  const existingNames = new Set(result.result.jobs.map((j: CronJob) => j.name));
 
   for (const agent of AGENTS) {
     const cronName = `${agent.id}-heartbeat`;

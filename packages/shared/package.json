@@ -5,8 +5,8 @@
   "type": "module",
   "exports": {
     "./openclaw": {
-      "types": "./dist/openclaw/index.d.ts",
-      "default": "./dist/openclaw/index.js"
+      "types": "./src/openclaw/index.ts",
+      "default": "./src/openclaw/index.ts"
     }
   },
   "scripts": {
