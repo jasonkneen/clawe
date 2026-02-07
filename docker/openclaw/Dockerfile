@@ -7,11 +7,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     make \
     g++ \
+    gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g openclaw@latest
 
 RUN mkdir -p /data/config /data/workspace
+
+# Copy templates and scripts
+COPY templates/ /opt/clawe/templates/
+COPY scripts/ /opt/clawe/scripts/
+RUN chmod +x /opt/clawe/scripts/*.sh
 
 ENV OPENCLAW_STATE_DIR=/data/config
 ENV OPENCLAW_PORT=18789
