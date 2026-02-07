@@ -1,14 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAutoScroll } from "./use-auto-scroll";
 
-// Mock scrollTo
-const mockScrollTo = vi.fn();
-
 describe("useAutoScroll", () => {
+  let container: HTMLDivElement;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockScrollTo.mockClear();
+
+    // Create a real DOM element for testing
+    container = document.createElement("div");
+    Object.defineProperties(container, {
+      scrollHeight: { value: 1000, configurable: true },
+      clientHeight: { value: 500, configurable: true },
+      scrollTop: { value: 0, writable: true, configurable: true },
+    });
+    container.scrollTo = vi.fn();
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    document.body.removeChild(container);
   });
 
   describe("initial state", () => {
@@ -26,24 +38,17 @@ describe("useAutoScroll", () => {
     it("calls scrollTo with smooth behavior by default", () => {
       const { result } = renderHook(() => useAutoScroll());
 
-      // Create a mock element
-      const mockElement = {
-        scrollTo: mockScrollTo,
-        scrollHeight: 1000,
-        scrollTop: 0,
-        clientHeight: 500,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      };
-
-      // @ts-expect-error - assigning mock to ref
-      result.current.scrollRef.current = mockElement;
+      // Assign the real DOM element to the ref
+      Object.defineProperty(result.current.scrollRef, "current", {
+        value: container,
+        writable: true,
+      });
 
       act(() => {
         result.current.scrollToBottom();
       });
 
-      expect(mockScrollTo).toHaveBeenCalledWith({
+      expect(container.scrollTo).toHaveBeenCalledWith({
         top: 1000,
         behavior: "smooth",
       });
@@ -52,23 +57,16 @@ describe("useAutoScroll", () => {
     it("accepts custom behavior parameter", () => {
       const { result } = renderHook(() => useAutoScroll());
 
-      const mockElement = {
-        scrollTo: mockScrollTo,
-        scrollHeight: 1000,
-        scrollTop: 0,
-        clientHeight: 500,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      };
-
-      // @ts-expect-error - assigning mock to ref
-      result.current.scrollRef.current = mockElement;
+      Object.defineProperty(result.current.scrollRef, "current", {
+        value: container,
+        writable: true,
+      });
 
       act(() => {
         result.current.scrollToBottom("instant");
       });
 
-      expect(mockScrollTo).toHaveBeenCalledWith({
+      expect(container.scrollTo).toHaveBeenCalledWith({
         top: 1000,
         behavior: "instant",
       });

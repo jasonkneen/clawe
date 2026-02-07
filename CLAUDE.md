@@ -66,6 +66,7 @@ Core models: `agents`, `tasks`, `messages` (see `packages/backend/convex/schema.
 - Prefer reusable components and functions over duplication
 - Keep it simple - avoid over-engineering and premature abstractions
 - **Use strong typing** - leverage types from external packages; avoid `any` and type assertions
+- **No type suppression** - avoid `@ts-expect-error`, `@ts-ignore`, and `as` casts; fix types properly instead
 - Prefer named exports over default exports (except Next.js pages/layouts where required)
 - Use `@clawe/ui/components/*` for UI imports
 - Use `@/` alias for app-local imports
