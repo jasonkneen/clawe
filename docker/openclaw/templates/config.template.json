@@ -96,6 +96,13 @@
     "auth": {
       "mode": "token",
       "token": "${OPENCLAW_TOKEN}"
+    },
+    "http": {
+      "endpoints": {
+        "chatCompletions": {
+          "enabled": true
+        }
+      }
     }
   }
 }

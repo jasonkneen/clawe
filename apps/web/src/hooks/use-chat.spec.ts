@@ -77,24 +77,23 @@ describe("useChat", () => {
       expect(result.current.status).toBe("idle");
     });
 
-    it("sets error on API failure", async () => {
-      const onError = vi.fn();
+    it("continues gracefully on API failure", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         json: () => Promise.resolve({ error: "Failed to load" }),
       });
 
       const { result } = renderHook(() =>
-        useChat({ sessionKey: "test-session", onError }),
+        useChat({ sessionKey: "test-session" }),
       );
 
       await act(async () => {
         await result.current.loadHistory();
       });
 
-      expect(result.current.status).toBe("error");
-      expect(result.current.error?.message).toBe("Failed to load");
-      expect(onError).toHaveBeenCalled();
+      // History loading failures should not put chat in error state
+      expect(result.current.status).toBe("idle");
+      expect(result.current.messages).toEqual([]);
     });
   });
 
@@ -150,25 +149,16 @@ describe("useChat", () => {
   });
 
   describe("abort", () => {
-    it("sends abort request to API", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
-
+    it("sets status to idle when aborting", () => {
       const { result } = renderHook(() =>
         useChat({ sessionKey: "test-session" }),
       );
 
-      await act(async () => {
-        await result.current.abort();
+      act(() => {
+        result.current.abort();
       });
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/chat/abort", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: expect.any(String),
-      });
+      expect(result.current.status).toBe("idle");
     });
   });
 });

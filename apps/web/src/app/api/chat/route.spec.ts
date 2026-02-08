@@ -1,16 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
 import { POST } from "./route";
 
-// Mock the gateway client
-vi.mock("@clawe/shared/openclaw", () => ({
-  createGatewayClient: vi.fn(() => ({
-    connect: vi.fn().mockResolvedValue({ type: "hello-ok", protocol: 3 }),
-    request: vi.fn().mockResolvedValue({}),
-    close: vi.fn(),
-    isConnected: vi.fn().mockReturnValue(true),
+// Mock the AI SDK
+vi.mock("@ai-sdk/openai", () => ({
+  createOpenAI: vi.fn(() => ({
+    chat: vi.fn(() => ({ modelId: "openclaw" })),
   })),
-  GatewayClient: vi.fn(),
+}));
+
+vi.mock("ai", () => ({
+  streamText: vi.fn(() => ({
+    toTextStreamResponse: vi.fn(
+      () =>
+        new Response("Hello", {
+          headers: { "Content-Type": "text/plain" },
+        }),
+    ),
+  })),
 }));
 
 describe("POST /api/chat", () => {
@@ -19,9 +25,9 @@ describe("POST /api/chat", () => {
   });
 
   it("returns 400 when sessionKey is missing", async () => {
-    const request = new NextRequest("http://localhost/api/chat", {
+    const request = new Request("http://localhost/api/chat", {
       method: "POST",
-      body: JSON.stringify({ message: "Hello" }),
+      body: JSON.stringify({ messages: [{ role: "user", content: "Hello" }] }),
     });
 
     const response = await POST(request);
@@ -31,35 +37,25 @@ describe("POST /api/chat", () => {
     expect(data.error).toBe("sessionKey is required");
   });
 
-  it("returns SSE stream with correct headers", async () => {
-    const request = new NextRequest("http://localhost/api/chat", {
+  it("returns 400 when messages is missing", async () => {
+    const request = new Request("http://localhost/api/chat", {
       method: "POST",
-      body: JSON.stringify({
-        sessionKey: "test-session",
-        message: "Hello",
-      }),
+      body: JSON.stringify({ sessionKey: "test-session" }),
     });
 
     const response = await POST(request);
+    expect(response.status).toBe(400);
 
-    expect(response.headers.get("Content-Type")).toBe("text/event-stream");
-    expect(response.headers.get("Cache-Control")).toBe("no-cache");
-    expect(response.headers.get("Connection")).toBe("keep-alive");
+    const data = await response.json();
+    expect(data.error).toBe("messages is required");
   });
 
-  it("handles attachments in request body", async () => {
-    const request = new NextRequest("http://localhost/api/chat", {
+  it("returns stream response with valid request", async () => {
+    const request = new Request("http://localhost/api/chat", {
       method: "POST",
       body: JSON.stringify({
         sessionKey: "test-session",
-        message: "Check this image",
-        attachments: [
-          {
-            type: "image",
-            mimeType: "image/png",
-            content: "base64data",
-          },
-        ],
+        messages: [{ role: "user", content: "Hello" }],
       }),
     });
 
@@ -68,7 +64,7 @@ describe("POST /api/chat", () => {
   });
 
   it("returns 500 on invalid JSON", async () => {
-    const request = new NextRequest("http://localhost/api/chat", {
+    const request = new Request("http://localhost/api/chat", {
       method: "POST",
       body: "invalid json",
     });

@@ -28,7 +28,6 @@ export const Chat = ({
     messages,
     input,
     setInput,
-    status,
     error,
     sendMessage,
     loadHistory,
@@ -60,8 +59,8 @@ export const Chat = ({
     await sendMessage(text, attachments);
   };
 
-  const handleStop = async () => {
-    await abort();
+  const handleStop = () => {
+    abort();
   };
 
   return (
@@ -97,7 +96,6 @@ export const Chat = ({
         onStop={handleStop}
         isLoading={isLoading}
         isStreaming={isStreaming}
-        disabled={status === "error"}
       />
     </div>
   );

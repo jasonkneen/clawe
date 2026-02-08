@@ -2,15 +2,14 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChatMessage } from "./chat-message";
-import type { ChatMessage as ChatMessageType } from "./types";
+import type { Message } from "@/hooks/use-chat";
 
 describe("ChatMessage", () => {
   it("renders user message", () => {
-    const message: ChatMessageType = {
+    const message: Message = {
       id: "1",
       role: "user",
-      content: [{ type: "text", text: "Hello" }],
-      timestamp: Date.now(),
+      content: "Hello",
     };
 
     render(<ChatMessage message={message} />);
@@ -19,11 +18,10 @@ describe("ChatMessage", () => {
   });
 
   it("renders assistant message", () => {
-    const message: ChatMessageType = {
+    const message: Message = {
       id: "2",
       role: "assistant",
-      content: [{ type: "text", text: "Hi there!" }],
-      timestamp: Date.now(),
+      content: "Hi there!",
     };
 
     render(<ChatMessage message={message} />);
@@ -31,48 +29,29 @@ describe("ChatMessage", () => {
     expect(screen.getByText("Hi there!")).toBeInTheDocument();
   });
 
-  it("shows timestamp", () => {
-    const timestamp = new Date("2024-01-15T10:30:00").getTime();
-    const message: ChatMessageType = {
+  it("shows timestamp when createdAt is set", () => {
+    const message: Message = {
       id: "1",
       role: "user",
-      content: [{ type: "text", text: "Hello" }],
-      timestamp,
+      content: "Hello",
+      createdAt: new Date("2024-01-15T10:30:00"),
     };
 
     render(<ChatMessage message={message} />);
 
-    // Should show formatted time
     expect(screen.getByText(/10:30/)).toBeInTheDocument();
   });
 
-  it("hides timestamp when streaming", () => {
-    const message: ChatMessageType = {
+  it("hides timestamp when createdAt is not set", () => {
+    const message: Message = {
       id: "1",
       role: "assistant",
-      content: [{ type: "text", text: "Hello" }],
-      timestamp: Date.now(),
-      isStreaming: true,
+      content: "Hello",
     };
 
     render(<ChatMessage message={message} />);
 
-    // Should not show timestamp while streaming
     const timestamps = screen.queryAllByText(/\d{1,2}:\d{2}/);
     expect(timestamps).toHaveLength(0);
-  });
-
-  it("renders content", () => {
-    const message: ChatMessageType = {
-      id: "1",
-      role: "assistant",
-      content: [{ type: "text", text: "Hello world" }],
-      timestamp: Date.now(),
-      isStreaming: true,
-    };
-
-    render(<ChatMessage message={message} />);
-
-    expect(screen.getByText("Hello world")).toBeInTheDocument();
   });
 });
