@@ -86,11 +86,19 @@ const DEFAULT_SIZE = "220px";
 const MIN_SIZE = "180px"; // Must be > COLLAPSED_SIZE for expand to work
 const MAX_SIZE = "280px";
 
+const STORAGE_KEY = "board-agents-panel-collapsed";
+
+// Get initial collapsed state from localStorage (runs once on module load)
+const getInitialCollapsed = () => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(STORAGE_KEY) === "true";
+};
+
 const BoardPage = () => {
   const { openDrawer } = useDrawer();
   const tasks = useQuery(api.tasks.list, {});
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(getInitialCollapsed);
 
   // Filter tasks by selected agents
   const filteredTasks = tasks?.filter((task) => {
@@ -154,14 +162,16 @@ const BoardPage = () => {
     inPixels: number;
   }) => {
     // Panel is collapsed when size is at or near collapsedSize (48px)
-    setIsCollapsed(size.inPixels <= 60);
+    const collapsed = size.inPixels <= 60;
+    setIsCollapsed(collapsed);
+    localStorage.setItem(STORAGE_KEY, String(collapsed));
   };
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="h-full">
       {/* Agents Panel */}
       <ResizablePanel
-        defaultSize={DEFAULT_SIZE}
+        defaultSize={isCollapsed ? COLLAPSED_SIZE : DEFAULT_SIZE}
         minSize={MIN_SIZE}
         maxSize={MAX_SIZE}
         collapsible
@@ -187,7 +197,7 @@ const BoardPage = () => {
               <PageHeaderActions>
                 <Button variant="outline" size="sm" onClick={handleOpenFeed}>
                   <Bell className="mr-2 h-4 w-4" />
-                  Feed
+                  Live Feed
                 </Button>
               </PageHeaderActions>
             </PageHeaderRow>

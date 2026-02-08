@@ -39,9 +39,12 @@ export const DrawerProvider = ({ children }: { children: React.ReactNode }) => {
     content: null,
   });
 
-  const openDrawer = useCallback((content: React.ReactNode, title?: string) => {
-    setState({ isOpen: true, content, title });
-  }, []);
+  const openDrawer = useCallback(
+    (content: React.ReactNode, title?: React.ReactNode) => {
+      setState({ isOpen: true, content, title });
+    },
+    [],
+  );
 
   const closeDrawer = useCallback(() => {
     setState((prev) => ({ ...prev, isOpen: false }));
@@ -68,7 +71,7 @@ export const DrawerProvider = ({ children }: { children: React.ReactNode }) => {
         {/* Overlay */}
         <div
           className={cn(
-            "absolute inset-0 z-40 bg-black/20 transition-opacity duration-200",
+            "absolute inset-0 z-40 bg-black/5 transition-all duration-200",
             state.isOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
           onClick={closeDrawer}
@@ -79,7 +82,7 @@ export const DrawerProvider = ({ children }: { children: React.ReactNode }) => {
         <div
           role="dialog"
           aria-modal="false"
-          aria-label={state.title || "Panel"}
+          aria-label="Side panel"
           className={cn(
             "bg-background absolute inset-y-0 right-0 z-50 flex w-80 flex-col border-l transition-transform duration-200 ease-out",
             state.isOpen
