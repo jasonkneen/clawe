@@ -1,4 +1,21 @@
+// AgentToolResult matches OpenClaw's tool execution result structure
+export type AgentToolResult<T = unknown> = {
+  content: Array<{
+    type: string;
+    text?: string;
+    data?: string;
+    mimeType?: string;
+  }>;
+  details: T;
+};
+
+// ToolResult for OpenClaw tool invocations (result contains content + details)
 export type ToolResult<T = unknown> =
+  | { ok: true; result: AgentToolResult<T> }
+  | { ok: false; error: { type: string; message: string } };
+
+// DirectResult for operations that don't go through OpenClaw tools
+export type DirectResult<T = unknown> =
   | { ok: true; result: T }
   | { ok: false; error: { type: string; message: string } };
 

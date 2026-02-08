@@ -11,7 +11,18 @@ export {
   cronList,
   cronAdd,
 } from "./client";
-export type { CronJob, CronListResult, CronAddJob } from "./client";
+export type {
+  CronJob,
+  CronListResult,
+  CronAddJob,
+  CronSchedule,
+  CronSessionTarget,
+  CronWakeMode,
+  CronDeliveryMode,
+  CronDelivery,
+  CronPayload,
+  CronJobState,
+} from "./client";
 
 // Gateway Client
 export { GatewayClient, createGatewayClient } from "./gateway-client";
@@ -25,7 +36,9 @@ export {
 
 // Types
 export type {
+  AgentToolResult,
   ToolResult,
+  DirectResult,
   ConfigGetResult,
   ConfigPatchResult,
   Session,

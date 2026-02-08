@@ -3,6 +3,9 @@
   "ui": "tui",
   "globalEnv": ["ENVIRONMENT"],
   "globalPassThroughEnv": [
+    "CONVEX_URL",
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
     "OPENCLAW_URL",
     "OPENCLAW_TOKEN",
     "CLAWE_DATA_DIR",

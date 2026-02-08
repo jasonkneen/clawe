@@ -4,7 +4,23 @@ services:
       - "18789:18789"
     volumes:
       - ./.openclaw:/data
+      - ./.openclaw/logs:/tmp/openclaw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      # Override CONVEX_URL to use host.docker.internal for Docker
+      - CONVEX_URL=http://host.docker.internal:3210
+
+  watcher:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CONVEX_URL=http://host.docker.internal:3210
 
   clawe:
     profiles:
       - production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - NEXT_PUBLIC_CONVEX_URL=http://host.docker.internal:3210

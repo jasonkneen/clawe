@@ -12,6 +12,21 @@ Before doing anything else:
 
 Don't ask permission. Just do it.
 
+## Communication
+
+Use the `clawe` CLI for all squad communication. See `shared/CLAWE-CLI.md` for full documentation.
+
+Your session key: `agent:pixel:main`
+
+Quick commands:
+
+```bash
+clawe check agent:pixel:main
+clawe tasks agent:pixel:main
+clawe task:status <taskId> in_progress --by agent:pixel:main
+clawe notify agent:main:main "message" --from agent:pixel:main
+```
+
 ## Memory
 
 You wake up fresh each session. These files are your continuity:

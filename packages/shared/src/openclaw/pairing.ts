@@ -5,7 +5,7 @@ import type {
   PairingRequest,
   PairingListResult,
   PairingApproveResult,
-  ToolResult,
+  DirectResult,
 } from "./types";
 import { getConfig, patchConfig } from "./client";
 
@@ -57,7 +57,7 @@ function pruneExpiredRequests(reqs: PairingRequest[], nowMs: number) {
 
 export async function listChannelPairingRequests(
   channel: string,
-): Promise<ToolResult<PairingListResult>> {
+): Promise<DirectResult<PairingListResult>> {
   try {
     const filePath = resolvePairingPath(channel);
     const store = await readJsonFile<PairingStore>(filePath, {
@@ -86,7 +86,7 @@ export async function listChannelPairingRequests(
 export async function approveChannelPairingCode(
   channel: string,
   code: string,
-): Promise<ToolResult<PairingApproveResult>> {
+): Promise<DirectResult<PairingApproveResult>> {
   try {
     if (!code) {
       return {
@@ -133,7 +133,7 @@ export async function approveChannelPairingCode(
     }
 
     // Extract existing allowFrom list
-    const config = configResult.result.config as {
+    const config = configResult.result.details.config as {
       channels?: {
         [key: string]: {
           allowFrom?: string[];
@@ -152,7 +152,7 @@ export async function approveChannelPairingCode(
             },
           },
         },
-        configResult.result.hash,
+        configResult.result.details.hash,
       );
 
       if (!patchResult.ok) {

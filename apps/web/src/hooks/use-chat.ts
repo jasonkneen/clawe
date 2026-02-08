@@ -13,6 +13,27 @@ import type {
 const REQUEST_TIMEOUT_MS = 30000;
 
 /**
+ * Internal system response patterns that should be filtered from chat.
+ * These are automated cron/heartbeat responses, not real conversation.
+ */
+const SYSTEM_MESSAGE_PATTERNS = [
+  // Exact matches (case-insensitive) - short system responses
+  /^NO_REPLY$/i,
+  /^REPLY_SKIP$/i,
+  /^HEARTBEAT_OK$/i,
+  /^OK$/i,
+  // Cron heartbeat instruction (the full cron trigger message)
+  /Read HEARTBEAT\.md.*follow it strictly/i,
+  /Check for notifications with ['"]clawe check['"]/i,
+  /If nothing needs attention.*reply HEARTBEAT_OK/i,
+  // System-prefixed messages
+  /^System:\s*\[\d{4}-\d{2}-\d{2}/i,
+  /^Cron:/i,
+  // Heartbeat status reports (contains HEARTBEAT_OK in the message)
+  /HEARTBEAT_OK/i,
+];
+
+/**
  * Extract text content from a message object.
  */
 function extractTextFromMessage(message: unknown): string {
@@ -71,6 +92,13 @@ function isInternalContent(text: string): boolean {
     trimmed.startsWith("# MEMORY.md")
   ) {
     return true;
+  }
+
+  // Check against system message patterns (heartbeat/cron)
+  for (const pattern of SYSTEM_MESSAGE_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      return true;
+    }
   }
 
   return false;
@@ -148,27 +176,75 @@ function parseHistoryMessage(msg: unknown, index: number): ChatMessage {
 }
 
 /**
- * Collapse consecutive assistant messages, keeping only the last one before each user message.
+ * Check if text looks like a JSON status/error message that should be hidden.
  */
-function collapseAssistantMessages(messages: ChatMessage[]): ChatMessage[] {
-  const result: ChatMessage[] = [];
+function isJsonStatusMessage(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      // Filter JSON messages with status, tool, error, or result keys
+      if (parsed.status || parsed.tool || parsed.error || parsed.result) {
+        return true;
+      }
+    } catch {
+      // Not valid JSON, don't filter
+    }
+  }
+  return false;
+}
 
-  for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i];
-    if (!msg) continue;
+/**
+ * Check if a message is empty (no meaningful content).
+ */
+function isEmptyMessage(message: ChatMessage): boolean {
+  for (const block of message.content) {
+    if (block.type === "text" && block.text && block.text.trim().length > 0) {
+      return false;
+    }
+    if (block.type === "image") {
+      return false;
+    }
+  }
+  return true;
+}
 
-    const nextMsg = messages[i + 1];
+/**
+ * Check if a message should be filtered out entirely (heartbeat/cron/system messages).
+ */
+function isSystemCronMessage(message: ChatMessage): boolean {
+  // Filter empty messages
+  if (isEmptyMessage(message)) {
+    return true;
+  }
 
-    if (msg.role === "user") {
-      result.push(msg);
-    } else if (msg.role === "assistant") {
-      if (!nextMsg || nextMsg.role === "user") {
-        result.push(msg);
+  // Check all text content in the message
+  for (const block of message.content) {
+    if (block.type === "text" && block.text) {
+      const text = block.text.trim();
+
+      // Filter JSON status/error messages
+      if (isJsonStatusMessage(text)) {
+        return true;
+      }
+
+      // Check against all system message patterns
+      for (const pattern of SYSTEM_MESSAGE_PATTERNS) {
+        if (pattern.test(text)) {
+          return true;
+        }
       }
     }
   }
 
-  return result;
+  return false;
+}
+
+/**
+ * Filter out system/cron messages from the message list.
+ */
+function filterSystemMessages(messages: ChatMessage[]): ChatMessage[] {
+  return messages.filter((msg) => !isSystemCronMessage(msg));
 }
 
 /**
@@ -205,10 +281,27 @@ export function useChat({
       }
 
       const data = await response.json();
-      const historyMessages = (data.messages || []).map(parseHistoryMessage);
-      const collapsedMessages = collapseAssistantMessages(historyMessages);
 
-      setMessages(collapsedMessages);
+      // Debug: log raw messages from API
+      console.log("[chat] Raw messages from API:", data.messages);
+
+      const historyMessages = (data.messages || []).map(parseHistoryMessage);
+
+      // Debug: log filtered messages
+      const beforeCount = historyMessages.length;
+      const filteredMessages = filterSystemMessages(historyMessages);
+      const afterCount = filteredMessages.length;
+      if (beforeCount !== afterCount) {
+        console.log(
+          `[chat] Filtered ${beforeCount - afterCount} system messages`,
+          historyMessages.filter((m: ChatMessage) => isSystemCronMessage(m)),
+        );
+      }
+
+      // Debug: log final messages
+      console.log("[chat] Final messages:", filteredMessages);
+
+      setMessages(filteredMessages);
       setStatus("idle");
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");

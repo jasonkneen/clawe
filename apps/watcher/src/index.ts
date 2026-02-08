@@ -61,13 +61,78 @@ const AGENTS = [
 const HEARTBEAT_MESSAGE =
   "Read HEARTBEAT.md and follow it strictly. Check for notifications with 'clawe check'. If nothing needs attention, reply HEARTBEAT_OK.";
 
+const STARTUP_RETRY_ATTEMPTS = 10;
+const STARTUP_RETRY_DELAY_MS = 3000;
+
+/**
+ * Sleep helper
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Retry a function with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxAttempts = STARTUP_RETRY_ATTEMPTS,
+  baseDelayMs = STARTUP_RETRY_DELAY_MS,
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+
+      if (attempt === maxAttempts) {
+        console.error(
+          `[watcher] ${label} failed after ${maxAttempts} attempts:`,
+          lastError.message,
+        );
+        throw lastError;
+      }
+
+      const delayMs = baseDelayMs * attempt;
+      console.log(
+        `[watcher] ${label} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs / 1000}s...`,
+      );
+      await sleep(delayMs);
+    }
+  }
+
+  throw lastError;
+}
+
 /**
  * Register all agents in Convex (upsert - creates or updates)
  */
 async function registerAgents(): Promise<void> {
   console.log("[watcher] Registering agents in Convex...");
+  console.log("[watcher] CONVEX_URL:", config.convexUrl);
 
-  for (const agent of AGENTS) {
+  // Try to register first agent with retry (waits for Convex to be ready)
+  const firstAgent = AGENTS[0];
+  if (firstAgent) {
+    await withRetry(async () => {
+      const sessionKey = `agent:${firstAgent.id}:main`;
+      await convex.mutation(api.agents.upsert, {
+        name: firstAgent.name,
+        role: firstAgent.role,
+        sessionKey,
+        emoji: firstAgent.emoji,
+      });
+      console.log(
+        `[watcher] ✓ ${firstAgent.name} ${firstAgent.emoji} registered (${sessionKey})`,
+      );
+    }, "Convex connection");
+  }
+
+  // Register remaining agents (Convex is now ready)
+  for (const agent of AGENTS.slice(1)) {
     const sessionKey = `agent:${agent.id}:main`;
 
     try {
@@ -97,13 +162,18 @@ async function registerAgents(): Promise<void> {
 async function setupCrons(): Promise<void> {
   console.log("[watcher] Checking heartbeat crons...");
 
-  const result = await cronList();
-  if (!result.ok) {
-    console.error("[watcher] Failed to list crons:", result.error?.message);
-    return;
-  }
+  // Retry getting cron list (waits for OpenClaw to be ready)
+  const result = await withRetry(async () => {
+    const res = await cronList();
+    if (!res.ok) {
+      throw new Error(res.error?.message ?? "Failed to list crons");
+    }
+    return res;
+  }, "OpenClaw connection");
 
-  const existingNames = new Set(result.result.jobs.map((j: CronJob) => j.name));
+  const existingNames = new Set(
+    result.result.details.jobs.map((j: CronJob) => j.name),
+  );
 
   for (const agent of AGENTS) {
     const cronName = `${agent.id}-heartbeat`;
@@ -170,13 +240,6 @@ function formatNotification(notification: {
   }
 
   return parts.join("\n");
-}
-
-/**
- * Sleep helper
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

@@ -167,20 +167,63 @@ export async function sessionsSend(
   });
 }
 
-// Cron job types
+// Cron types (matching OpenClaw src/cron/types.ts)
+export type CronSchedule =
+  | { kind: "at"; at: string }
+  | { kind: "every"; everyMs: number; anchorMs?: number }
+  | { kind: "cron"; expr: string; tz?: string };
+
+export type CronSessionTarget = "main" | "isolated";
+export type CronWakeMode = "next-heartbeat" | "now";
+export type CronDeliveryMode = "none" | "announce";
+
+export interface CronDelivery {
+  mode: CronDeliveryMode;
+  channel?: string;
+  to?: string;
+  bestEffort?: boolean;
+}
+
+export type CronPayload =
+  | { kind: "systemEvent"; text: string }
+  | {
+      kind: "agentTurn";
+      message: string;
+      model?: string;
+      thinking?: string;
+      timeoutSeconds?: number;
+      allowUnsafeExternalContent?: boolean;
+      deliver?: boolean;
+      channel?: string;
+      to?: string;
+      bestEffortDeliver?: boolean;
+    };
+
+export interface CronJobState {
+  nextRunAtMs?: number;
+  runningAtMs?: number;
+  lastRunAtMs?: number;
+  lastStatus?: "ok" | "error" | "skipped";
+  lastError?: string;
+  lastDurationMs?: number;
+  consecutiveErrors?: number;
+}
+
 export interface CronJob {
   id: string;
+  agentId?: string;
   name: string;
-  agentId: string;
+  description?: string;
   enabled: boolean;
-  schedule: { kind: string; expr: string };
-  sessionTarget: string;
-  payload: {
-    kind: string;
-    message: string;
-    model?: string;
-    timeoutSeconds?: number;
-  };
+  deleteAfterRun?: boolean;
+  createdAtMs: number;
+  updatedAtMs: number;
+  schedule: CronSchedule;
+  sessionTarget: CronSessionTarget;
+  wakeMode: CronWakeMode;
+  payload: CronPayload;
+  delivery?: CronDelivery;
+  state: CronJobState;
 }
 
 export interface CronListResult {
@@ -189,16 +232,15 @@ export interface CronListResult {
 
 export interface CronAddJob {
   name: string;
-  agentId: string;
+  agentId?: string;
+  description?: string;
   enabled?: boolean;
-  schedule: { kind: "cron"; expr: string };
-  sessionTarget: "isolated" | "main";
-  payload: {
-    kind: "agentTurn";
-    message: string;
-    model?: string;
-    timeoutSeconds?: number;
-  };
+  deleteAfterRun?: boolean;
+  schedule: CronSchedule;
+  sessionTarget: CronSessionTarget;
+  wakeMode?: CronWakeMode;
+  payload: CronPayload;
+  delivery?: CronDelivery;
 }
 
 // Cron - List jobs
