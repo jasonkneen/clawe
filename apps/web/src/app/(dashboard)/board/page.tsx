@@ -2,10 +2,13 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@clawe/backend";
+import { Activity } from "lucide-react";
+import { Button } from "@clawe/ui/components/button";
 import {
   PageHeader,
   PageHeaderRow,
   PageHeaderTitle,
+  PageHeaderActions,
 } from "@dashboard/page-header";
 import {
   KanbanBoard,
@@ -13,6 +16,7 @@ import {
   type KanbanColumnDef,
 } from "@/components/kanban";
 import { LiveFeed } from "@/components/live-feed";
+import { useDrawer } from "@/providers/drawer-provider";
 
 // Map priority from Convex to Kanban format
 function mapPriority(priority?: string): "low" | "medium" | "high" {
@@ -68,6 +72,7 @@ function isValidStatus(status: string): status is TaskStatus {
 }
 
 const BoardPage = () => {
+  const { openDrawer } = useDrawer();
   const tasks = useQuery(api.tasks.list, {});
 
   // Group tasks by status
@@ -121,24 +126,26 @@ const BoardPage = () => {
     },
   ];
 
+  const handleOpenFeed = () => {
+    openDrawer(<LiveFeed className="h-full" />, "Activity");
+  };
+
   return (
     <>
       <PageHeader className="mb-0">
         <PageHeaderRow>
           <PageHeaderTitle>Board</PageHeaderTitle>
+          <PageHeaderActions>
+            <Button variant="outline" size="sm" onClick={handleOpenFeed}>
+              <Activity className="mr-2 h-4 w-4" />
+              Feed
+            </Button>
+          </PageHeaderActions>
         </PageHeaderRow>
       </PageHeader>
 
-      <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
-        {/* Kanban Board */}
-        <div className="min-w-0 flex-1 pt-6">
-          <KanbanBoard columns={columns} className="h-full" />
-        </div>
-
-        {/* Live Feed Sidebar */}
-        <div className="bg-muted/30 hidden h-full w-80 shrink-0 overflow-hidden border-l lg:block">
-          <LiveFeed className="h-full" />
-        </div>
+      <div className="min-h-0 flex-1 overflow-hidden pt-6">
+        <KanbanBoard columns={columns} className="h-full" />
       </div>
     </>
   );

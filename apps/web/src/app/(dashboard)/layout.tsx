@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "@clawe/ui/components/sidebar";
 import { DashboardSidebar } from "@dashboard/dashboard-sidebar";
 import { isLockedSidebarRoute } from "@dashboard/sidebar-config";
 import { SquadProvider } from "@/providers/squad-provider";
+import { DrawerProvider } from "@/providers/drawer-provider";
 import { useRequireOnboarding } from "@/hooks/use-onboarding-guard";
 
 type DashboardLayoutProps = {
@@ -53,15 +54,17 @@ const DashboardLayout = ({ children, header }: DashboardLayoutProps) => {
           <header className="flex h-12 shrink-0 items-center gap-2 border-b">
             {header}
           </header>
-          {fullHeight ? (
-            <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
-              {children}
-            </main>
-          ) : (
-            <ScrollArea className="h-full min-h-0 flex-1">
-              <main className="p-6">{children}</main>
-            </ScrollArea>
-          )}
+          <DrawerProvider>
+            {fullHeight ? (
+              <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
+                {children}
+              </main>
+            ) : (
+              <ScrollArea className="h-full min-h-0 flex-1">
+                <main className="p-6">{children}</main>
+              </ScrollArea>
+            )}
+          </DrawerProvider>
         </SidebarInset>
       </SidebarProvider>
     </SquadProvider>
