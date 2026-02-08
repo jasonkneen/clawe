@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@clawe/backend";
-import { Activity } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@clawe/ui/components/button";
 import {
   PageHeader,
@@ -15,7 +15,7 @@ import {
   type KanbanTask,
   type KanbanColumnDef,
 } from "@/components/kanban";
-import { LiveFeed } from "@/components/live-feed";
+import { LiveFeed, LiveFeedTitle } from "@/components/live-feed";
 import { useDrawer } from "@/providers/drawer-provider";
 
 // Map priority from Convex to Kanban format
@@ -127,7 +127,7 @@ const BoardPage = () => {
   ];
 
   const handleOpenFeed = () => {
-    openDrawer(<LiveFeed className="h-full" />, "Activity");
+    openDrawer(<LiveFeed className="h-full" />, <LiveFeedTitle />);
   };
 
   return (
@@ -137,7 +137,7 @@ const BoardPage = () => {
           <PageHeaderTitle>Board</PageHeaderTitle>
           <PageHeaderActions>
             <Button variant="outline" size="sm" onClick={handleOpenFeed}>
-              <Activity className="mr-2 h-4 w-4" />
+              <Bell className="mr-2 h-4 w-4" />
               Feed
             </Button>
           </PageHeaderActions>

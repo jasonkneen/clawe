@@ -13,13 +13,13 @@ import { Button } from "@clawe/ui/components/button";
 
 type DrawerState = {
   isOpen: boolean;
-  title?: string;
+  title?: React.ReactNode;
   content: React.ReactNode;
 };
 
 type DrawerContextValue = {
   isOpen: boolean;
-  openDrawer: (content: React.ReactNode, title?: string) => void;
+  openDrawer: (content: React.ReactNode, title?: React.ReactNode) => void;
   closeDrawer: () => void;
 };
 
@@ -90,7 +90,9 @@ export const DrawerProvider = ({ children }: { children: React.ReactNode }) => {
           {/* Header */}
           {state.title && (
             <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
-              <h2 className="font-semibold">{state.title}</h2>
+              <div className="flex items-center gap-2 font-semibold">
+                {state.title}
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
