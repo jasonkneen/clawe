@@ -229,11 +229,3 @@ pnpm build
 | `OPENCLAW_TOKEN`    | Yes      | Auth token for OpenClaw gateway   |
 | `CONVEX_URL`        | Yes      | Convex deployment URL             |
 | `OPENAI_API_KEY`    | No       | OpenAI key (for image generation) |
-
-## License
-
-MIT
-
-## Credits
-
-Built on [OpenClaw](https://github.com/openclaw/openclaw) — the open-source AI agent platform.
