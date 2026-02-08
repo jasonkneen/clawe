@@ -1,18 +1,48 @@
 "use client";
 
-import { Bot, User } from "lucide-react";
+import { Bot, User, Info } from "lucide-react";
 import { cn } from "@clawe/ui/lib/utils";
-import { ChatMessageContent } from "./chat-message-content";
-import type { ChatMessage as ChatMessageType } from "./types";
+import type { Message } from "@/hooks/use-chat";
+
+/**
+ * Context message patterns - messages injected by OpenClaw for context.
+ */
+const CONTEXT_MESSAGE_PATTERNS = [
+  /^\[Chat messages since your last reply/i,
+  /\[Current message - respond to this\]/i,
+];
+
+const isContextMessage = (content: string): boolean => {
+  return CONTEXT_MESSAGE_PATTERNS.some((pattern) => pattern.test(content));
+};
 
 export type ChatMessageProps = {
-  message: ChatMessageType;
+  message: Message;
   className?: string;
 };
 
 export const ChatMessage = ({ message, className }: ChatMessageProps) => {
   const isUser = message.role === "user";
-  const isStreaming = message.isStreaming;
+  const isContext = isContextMessage(message.content);
+
+  // Context/System messages - centered, subtle design
+  if (isContext) {
+    return (
+      <div className={cn("flex justify-center px-4 py-2", className)}>
+        <div className="border-border/50 bg-muted/30 flex max-w-[90%] items-start gap-2 rounded-lg border border-dashed px-4 py-3">
+          <Info className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <span className="text-muted-foreground mb-1 block text-xs font-medium tracking-wide uppercase">
+              Context
+            </span>
+            <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
+              {message.content}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -47,16 +77,15 @@ export const ChatMessage = ({ message, className }: ChatMessageProps) => {
             isUser
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-foreground",
-            isStreaming && "animate-pulse",
           )}
         >
-          <ChatMessageContent content={message.content} />
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
 
         {/* Timestamp */}
-        {message.timestamp && !isStreaming && (
+        {message.createdAt && (
           <span className="text-muted-foreground px-1 text-xs">
-            {formatTime(message.timestamp)}
+            {formatTime(message.createdAt)}
           </span>
         )}
       </div>
@@ -64,9 +93,9 @@ export const ChatMessage = ({ message, className }: ChatMessageProps) => {
   );
 };
 
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString([], {
+const formatTime = (date: Date): string => {
+  return date.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
+};

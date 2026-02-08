@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChatMessages } from "./chat-messages";
-import type { ChatMessage } from "./types";
+import type { Message } from "@/hooks/use-chat";
 
 describe("ChatMessages", () => {
   it("renders empty state when no messages", () => {
@@ -11,18 +11,16 @@ describe("ChatMessages", () => {
   });
 
   it("renders messages", () => {
-    const messages: ChatMessage[] = [
+    const messages: Message[] = [
       {
         id: "1",
         role: "user",
-        content: [{ type: "text", text: "Hello" }],
-        timestamp: Date.now(),
+        content: "Hello",
       },
       {
         id: "2",
         role: "assistant",
-        content: [{ type: "text", text: "Hi there!" }],
-        timestamp: Date.now(),
+        content: "Hi there!",
       },
     ];
 
@@ -32,17 +30,21 @@ describe("ChatMessages", () => {
     expect(screen.getByText("Hi there!")).toBeInTheDocument();
   });
 
-  it("shows thinking indicator when loading after user message", () => {
-    const messages: ChatMessage[] = [
+  it("shows thinking indicator when streaming with empty assistant message", () => {
+    const messages: Message[] = [
       {
         id: "1",
         role: "user",
-        content: [{ type: "text", text: "Hello" }],
-        timestamp: Date.now(),
+        content: "Hello",
+      },
+      {
+        id: "2",
+        role: "assistant",
+        content: "",
       },
     ];
 
-    render(<ChatMessages messages={messages} isLoading isStreaming={false} />);
+    render(<ChatMessages messages={messages} isStreaming />);
 
     // The thinking indicator shows animated dots
     const thinkingDots = document.querySelectorAll(".animate-bounce");
@@ -51,12 +53,11 @@ describe("ChatMessages", () => {
 
   it("shows error message when error provided with messages", () => {
     const error = new Error("Something went wrong");
-    const messages: ChatMessage[] = [
+    const messages: Message[] = [
       {
         id: "1",
         role: "user",
-        content: [{ type: "text", text: "Hello" }],
-        timestamp: Date.now(),
+        content: "Hello",
       },
     ];
 
