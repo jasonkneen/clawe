@@ -139,7 +139,8 @@ async function main(): Promise<void> {
         break;
       }
 
-      case "task:view": {
+      case "task:view":
+      case "task:show": {
         const taskId = positionalArgs[0];
         if (!taskId) {
           console.error("Usage: clawe task:view <taskId>");

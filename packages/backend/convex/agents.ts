@@ -173,6 +173,11 @@ export const heartbeat = mutation({
       throw new Error(`Agent not found: ${args.sessionKey}`);
     }
 
+    // Only log activity if agent was offline (no heartbeat in last 5 minutes)
+    const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+    const wasOffline =
+      !agent.lastHeartbeat || now - agent.lastHeartbeat > ONLINE_THRESHOLD_MS;
+
     await ctx.db.patch(agent._id, {
       lastHeartbeat: now,
       lastSeen: now,
@@ -180,13 +185,15 @@ export const heartbeat = mutation({
       updatedAt: now,
     });
 
-    // Log heartbeat activity
-    await ctx.db.insert("activities", {
-      type: "agent_heartbeat",
-      agentId: agent._id,
-      message: `${agent.name} checked in`,
-      createdAt: now,
-    });
+    // Only log heartbeat activity when agent comes online (not every heartbeat)
+    if (wasOffline) {
+      await ctx.db.insert("activities", {
+        type: "agent_heartbeat",
+        agentId: agent._id,
+        message: `${agent.name} is online`,
+        createdAt: now,
+      });
+    }
 
     return agent._id;
   },
