@@ -343,6 +343,116 @@ export const updateStatus = mutation({
   },
 });
 
+// Approve a task in review → done
+export const approve = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    humanAuthor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+    if (task.status !== "review") throw new Error("Task is not in review");
+
+    const authorName = args.humanAuthor ?? "Owner";
+
+    // Set to done
+    await ctx.db.patch(args.taskId, {
+      status: "done",
+      completedAt: now,
+      updatedAt: now,
+    });
+
+    // Add comment
+    await ctx.db.insert("messages", {
+      taskId: args.taskId,
+      humanAuthor: authorName,
+      type: "comment",
+      content: "✅ Approved — looks good!",
+      createdAt: now,
+    });
+
+    // Log activity
+    await ctx.db.insert("activities", {
+      type: "task_status_changed",
+      taskId: args.taskId,
+      message: `${authorName} approved "${task.title}"`,
+      metadata: { oldStatus: "review", newStatus: "done" },
+      createdAt: now,
+    });
+
+    // Notify assignees
+    if (task.assigneeIds) {
+      for (const assigneeId of task.assigneeIds) {
+        await ctx.db.insert("notifications", {
+          targetAgentId: assigneeId,
+          type: "task_completed",
+          taskId: args.taskId,
+          content: `✅ "${task.title}" approved!`,
+          delivered: false,
+          createdAt: now,
+        });
+      }
+    }
+  },
+});
+
+// Request changes on a task in review → back to in_progress
+export const requestChanges = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    feedback: v.string(),
+    humanAuthor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+    if (task.status !== "review") throw new Error("Task is not in review");
+
+    const authorName = args.humanAuthor ?? "Owner";
+
+    // Set back to in_progress
+    await ctx.db.patch(args.taskId, {
+      status: "in_progress",
+      updatedAt: now,
+    });
+
+    // Add feedback as comment
+    await ctx.db.insert("messages", {
+      taskId: args.taskId,
+      humanAuthor: authorName,
+      type: "comment",
+      content: `✏️ Changes requested:\n${args.feedback}`,
+      createdAt: now,
+    });
+
+    // Log activity
+    await ctx.db.insert("activities", {
+      type: "task_status_changed",
+      taskId: args.taskId,
+      message: `${authorName} requested changes on "${task.title}"`,
+      metadata: { oldStatus: "review", newStatus: "in_progress" },
+      createdAt: now,
+    });
+
+    // Notify assignees
+    if (task.assigneeIds) {
+      for (const assigneeId of task.assigneeIds) {
+        await ctx.db.insert("notifications", {
+          targetAgentId: assigneeId,
+          type: "task_assigned",
+          taskId: args.taskId,
+          content: `✏️ Changes requested on "${task.title}":\n${args.feedback}`,
+          delivered: false,
+          createdAt: now,
+        });
+      }
+    }
+  },
+});
+
 // Assign task to agent(s)
 export const assign = mutation({
   args: {

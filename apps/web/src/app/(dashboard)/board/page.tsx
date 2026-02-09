@@ -57,6 +57,7 @@ function mapTask(task: TaskWithAssignees): KanbanTask {
     id: task._id,
     title: task.title,
     description: task.description,
+    status: task.status as KanbanTask["status"],
     priority: mapPriority(task.priority),
     assignee: task.assignees?.[0]
       ? `${task.assignees[0].emoji || ""} ${task.assignees[0].name}`.trim()

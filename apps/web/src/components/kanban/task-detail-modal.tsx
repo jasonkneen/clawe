@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@clawe/backend";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@clawe/ui/components/dialog";
+import { Button } from "@clawe/ui/components/button";
+import { Textarea } from "@clawe/ui/components/textarea";
 import { cn } from "@clawe/ui/lib/utils";
-import { Circle } from "lucide-react";
+import { Circle, ThumbsUp, Pencil } from "lucide-react";
+import type { Id } from "@clawe/backend/dataModel";
 import type { KanbanTask } from "./types";
 import type { DocumentWithCreator } from "@clawe/backend/types";
 import { DocumentsSection } from "./_components/documents-section";
@@ -47,15 +52,58 @@ export const TaskDetailModal = ({
 }: TaskDetailModalProps) => {
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentWithCreator | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const approve = useMutation(api.tasks.approve);
+  const requestChanges = useMutation(api.tasks.requestChanges);
 
   if (!task) return null;
 
   const priority = priorityConfig[task.priority];
   const hasSubtasks = task.subtasks.length > 0;
+  const isReview = task.status === "review";
+
+  const handleApprove = async () => {
+    setIsSubmitting(true);
+    try {
+      await approve({
+        taskId: task.id as Id<"tasks">,
+      });
+      onOpenChange(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!feedback.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await requestChanges({
+        taskId: task.id as Id<"tasks">,
+        feedback: feedback.trim(),
+      });
+      setFeedback("");
+      setShowFeedback(false);
+      onOpenChange(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setShowFeedback(false);
+      setFeedback("");
+    }
+    onOpenChange(open);
+  };
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-xl">{task.title}</DialogTitle>
@@ -109,6 +157,72 @@ export const TaskDetailModal = ({
               taskId={task.id}
               onViewDocument={setSelectedDocument}
             />
+
+            {/* Review actions */}
+            {isReview && (
+              <div className="bg-muted/50 rounded-lg p-4">
+                {!showFeedback ? (
+                  <>
+                    <p className="text-muted-foreground mb-3 text-sm font-medium">
+                      What do you think?
+                    </p>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        className="border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-950/50 flex-1"
+                        onClick={handleApprove}
+                        disabled={isSubmitting}
+                      >
+                        <ThumbsUp className="mr-2 h-4 w-4" />
+                        Looks good!
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-amber-200 hover:bg-amber-50 hover:border-amber-300 dark:border-amber-800 dark:hover:bg-amber-950/50 flex-1"
+                        onClick={() => setShowFeedback(true)}
+                        disabled={isSubmitting}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Needs tweaks
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground mb-2 text-sm font-medium">
+                      What needs to change?
+                    </p>
+                    <Textarea
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      placeholder="Describe the changes needed..."
+                      className="mb-3 min-h-[80px] resize-none"
+                      autoFocus
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowFeedback(false);
+                          setFeedback("");
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleRequestChanges}
+                        disabled={isSubmitting || !feedback.trim()}
+                      >
+                        Send feedback
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

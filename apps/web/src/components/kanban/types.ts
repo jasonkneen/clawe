@@ -3,6 +3,7 @@ export type KanbanTask = {
   id: string;
   title: string;
   description?: string;
+  status?: "inbox" | "assigned" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high";
   assignee?: string;
   subtasks: KanbanTask[];
