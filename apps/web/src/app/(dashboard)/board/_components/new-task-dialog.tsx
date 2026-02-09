@@ -71,7 +71,7 @@ export const NewTaskDialog = () => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="brand" size="sm">
+        <Button variant="outline" size="sm" className="text-brand">
           <Plus className="h-4 w-4" />
           New
         </Button>

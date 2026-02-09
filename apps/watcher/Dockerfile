@@ -21,7 +21,7 @@ COPY packages/backend/convex/*.ts ./node_modules/@clawe/backend/convex/
 RUN echo '{"name":"@clawe/watcher","private":true,"type":"module"}' > package.json
 
 # Install production dependencies
-RUN npm install convex axios ws --omit=dev
+RUN npm install convex axios ws moment-timezone --omit=dev
 
 ENV NODE_ENV=production
 

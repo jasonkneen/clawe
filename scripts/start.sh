@@ -6,24 +6,78 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$ROOT_DIR"
 
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo_info() { echo -e "${GREEN}==>${NC} $1"; }
+echo_warn() { echo -e "${YELLOW}==>${NC} $1"; }
+echo_error() { echo -e "${RED}ERROR:${NC} $1"; }
+
 # Auto-generate .env if it doesn't exist
 if [ ! -f .env ]; then
-    echo "==> Creating .env with auto-generated OPENCLAW_TOKEN..."
+    echo_info "Creating .env from .env.example..."
     cp .env.example .env
 
+    # Generate secure random token
     TOKEN=$(openssl rand -hex 32)
 
     # Cross-platform sed (macOS vs Linux)
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s/change-me-to-secure-random-token/$TOKEN/" .env
+        sed -i '' "s/your-secure-token-here/$TOKEN/" .env
     else
-        sed -i "s/change-me-to-secure-random-token/$TOKEN/" .env
+        sed -i "s/your-secure-token-here/$TOKEN/" .env
     fi
 
-    echo "==> Generated OPENCLAW_TOKEN: ${TOKEN:0:8}..."
+    echo_info "Generated OPENCLAW_TOKEN: ${TOKEN:0:8}..."
+    echo_warn "Please edit .env and set your ANTHROPIC_API_KEY and CONVEX_URL"
 fi
 
-echo "==> Starting Clawe (production mode)..."
+# Load .env
+set -a
+source .env
+set +a
+
+# Validate required environment variables
+MISSING_VARS=()
+
+if [ -z "$ANTHROPIC_API_KEY" ] || [ "$ANTHROPIC_API_KEY" = "sk-ant-..." ]; then
+    MISSING_VARS+=("ANTHROPIC_API_KEY")
+fi
+
+if [ -z "$CONVEX_URL" ] || [ "$CONVEX_URL" = "https://your-deployment.convex.cloud" ]; then
+    MISSING_VARS+=("CONVEX_URL")
+fi
+
+if [ -z "$OPENCLAW_TOKEN" ] || [ "$OPENCLAW_TOKEN" = "your-secure-token-here" ]; then
+    MISSING_VARS+=("OPENCLAW_TOKEN")
+fi
+
+if [ ${#MISSING_VARS[@]} -gt 0 ]; then
+    echo_error "Missing required environment variables in .env:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  - $var"
+    done
+    echo ""
+    echo "Please edit .env and set these values before running."
+    exit 1
+fi
+
+# Warn about optional variables
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo_warn "OPENAI_API_KEY not set - image generation will be disabled"
+fi
+
+# Build packages needed for Docker images
+echo_info "Building packages..."
+pnpm install --frozen-lockfile
+pnpm --filter @clawe/cli build
+pnpm --filter @clawe/shared build
+pnpm --filter @clawe/watcher build
+
+echo_info "Starting Clawe (production mode)..."
 
 # Use only docker-compose.yml (ignore override) for production
-docker-compose -f docker-compose.yml up "$@"
+docker compose -f docker-compose.yml up --build "$@"

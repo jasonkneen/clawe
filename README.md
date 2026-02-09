@@ -53,11 +53,30 @@ npx convex deploy
 
 ### 4. Start the System
 
+**Production (recommended):**
+
 ```bash
-docker compose up -d
+./scripts/start.sh
 ```
 
-This starts:
+This script will:
+- Create `.env` from `.env.example` if missing
+- Auto-generate a secure `OPENCLAW_TOKEN`
+- Validate all required environment variables
+- Build necessary packages
+- Start the Docker containers
+
+**Development:**
+
+```bash
+# Start OpenClaw gateway only (use local web dev server)
+pnpm dev:docker
+
+# In another terminal, start web + Convex
+pnpm dev
+```
+
+The production stack starts:
 
 - **openclaw** — Gateway running all agents
 - **watcher** — Notification delivery + cron setup
@@ -75,6 +94,15 @@ Clawe comes with 4 pre-configured agents:
 | 🔍 Scout | SEO        | Every 15 min |
 
 Heartbeats are staggered to avoid rate limits.
+
+## Routines
+
+Schedule recurring tasks that automatically create inbox items:
+
+- Configure day/time schedules per routine
+- 1-hour trigger window for crash tolerance
+- Tasks created with Clawe as the creator
+- Manage via Settings → General in the dashboard
 
 ## Architecture
 
@@ -211,14 +239,34 @@ const AGENTS = [
 # Install dependencies
 pnpm install
 
-# Run Convex dev server
-cd packages/backend && npx convex dev
+# Terminal 1: Start Convex dev server
+pnpm convex:dev
 
-# Run web dashboard
-pnpm dev --filter web
+# Terminal 2: Start OpenClaw gateway in Docker
+pnpm dev:docker
 
+# Terminal 3: Start web dashboard
+pnpm dev:web
+
+# Or run everything together (Convex + web, but not OpenClaw)
+pnpm dev
+```
+
+### Useful Commands
+
+```bash
 # Build everything
 pnpm build
+
+# Type check
+pnpm check-types
+
+# Lint and format
+pnpm check      # Check only
+pnpm fix        # Auto-fix
+
+# Deploy Convex to production
+pnpm convex:deploy
 ```
 
 ## Environment Variables
