@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@clawe/backend";
 import { cn } from "@clawe/ui/lib/utils";
 import { Loader2 } from "lucide-react";
-import { deriveStatus } from "@clawe/shared/agents";
 import { AgentsPanelHeader } from "./agents-panel-header";
 import { AgentsPanelList } from "./agents-panel-list";
 
@@ -24,13 +22,7 @@ export const AgentsPanel = ({
 }: AgentsPanelProps) => {
   const agents = useQuery(api.agents.squad);
 
-  const { total, active } = useMemo(() => {
-    if (!agents) return { total: 0, active: 0 };
-    return {
-      total: agents.length,
-      active: agents.filter((a) => deriveStatus(a) === "online").length,
-    };
-  }, [agents]);
+  const total = agents?.length ?? 0;
 
   const handleToggleAgent = (agentId: string) => {
     if (!onSelectionChange) return;
@@ -44,7 +36,7 @@ export const AgentsPanel = ({
 
   return (
     <div className={cn("flex h-full flex-col border-r", className)}>
-      <AgentsPanelHeader total={total} active={active} collapsed={collapsed} />
+      <AgentsPanelHeader total={total} collapsed={collapsed} />
 
       {!agents ? (
         <div className="flex flex-1 items-center justify-center">

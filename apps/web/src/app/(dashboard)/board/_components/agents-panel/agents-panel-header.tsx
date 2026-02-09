@@ -5,13 +5,11 @@ import { cn } from "@clawe/ui/lib/utils";
 
 export type AgentsPanelHeaderProps = {
   total: number;
-  active: number;
   collapsed?: boolean;
 };
 
 export const AgentsPanelHeader = ({
   total,
-  active,
   collapsed = false,
 }: AgentsPanelHeaderProps) => {
   return (
@@ -22,15 +20,7 @@ export const AgentsPanelHeader = ({
       )}
     >
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <Users className="text-foreground h-4 w-4" />
-          {active > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500">
-              <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-75" />
-            </span>
-          )}
-        </div>
-
+        <Users className="text-foreground h-4 w-4" />
         {!collapsed && (
           <h2 className="text-sm font-semibold tracking-wide">Agents</h2>
         )}
