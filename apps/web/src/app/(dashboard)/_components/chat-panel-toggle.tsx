@@ -18,12 +18,12 @@ export const ChatPanelToggle = () => {
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className={cn("h-8 w-8", isOpen && "bg-accent")}
+          size="sm"
+          className={cn(isOpen && "bg-accent")}
           onClick={toggle}
         >
           <BotMessageSquare className="h-4 w-4" />
-          <span className="sr-only">Toggle chat</span>
+          Chat
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom">

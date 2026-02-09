@@ -7,23 +7,40 @@ import {
   PageHeaderRow,
   PageHeaderTitle,
 } from "@dashboard/page-header";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@clawe/ui/components/card";
 import { Badge } from "@clawe/ui/components/badge";
+import { Skeleton } from "@clawe/ui/components/skeleton";
 import { deriveStatus, type AgentStatus } from "@clawe/shared/agents";
 
-const statusColors: Record<AgentStatus, string> = {
-  offline: "bg-gray-500",
-  online: "bg-green-500",
+const statusConfig: Record<
+  AgentStatus,
+  { dotColor: string; bgColor: string; textColor: string; label: string }
+> = {
+  online: {
+    dotColor: "bg-emerald-500",
+    bgColor: "bg-emerald-100 dark:bg-emerald-900/30",
+    textColor: "text-emerald-700 dark:text-emerald-400",
+    label: "Online",
+  },
+  offline: {
+    dotColor: "bg-gray-400",
+    bgColor: "",
+    textColor: "",
+    label: "Offline",
+  },
 };
 
-function getStatusColor(status: AgentStatus): string {
-  return statusColors[status];
-}
+const formatLastSeen = (timestamp?: number): string => {
+  if (!timestamp) return "Never";
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return new Date(timestamp).toLocaleDateString();
+};
 
 const AgentsPage = () => {
   const agents = useQuery(api.agents.squad);
@@ -36,63 +53,83 @@ const AgentsPage = () => {
         </PageHeaderRow>
       </PageHeader>
 
-      <div className="p-6">
-        {!agents ? (
-          <div className="text-muted-foreground">Loading...</div>
+      <div className="space-y-4">
+        <p className="text-muted-foreground text-sm">
+          Your AI agents and their current status.
+        </p>
+
+        {agents === undefined ? (
+          <div className="flex flex-wrap gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <AgentCardSkeleton key={i} />
+            ))}
+          </div>
         ) : agents.length === 0 ? (
-          <div className="text-muted-foreground">No agents registered yet.</div>
+          <p className="text-muted-foreground">No agents registered yet.</p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {agents.map((agent) => (
-              <Card key={agent._id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <span className="text-2xl">{agent.emoji}</span>
-                    <span>{agent.name}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Role</span>
-                      <span>{agent.role}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Status</span>
+          <div className="flex flex-wrap gap-4">
+            {agents.map((agent) => {
+              const status = deriveStatus(agent);
+              const config = statusConfig[status];
+
+              return (
+                <div
+                  key={agent._id}
+                  className="flex w-52 flex-col rounded-lg border p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-3xl">{agent.emoji}</span>
+                    {status === "offline" ? (
+                      <Badge variant="outline">{config.label}</Badge>
+                    ) : (
                       <Badge
-                        variant="outline"
-                        className="flex items-center gap-1.5"
+                        variant="secondary"
+                        className={`${config.bgColor} ${config.textColor}`}
                       >
                         <span
-                          className={`h-2 w-2 rounded-full ${getStatusColor(deriveStatus(agent))}`}
+                          className={`mr-1.5 h-1.5 w-1.5 rounded-full ${config.dotColor}`}
                         />
-                        {deriveStatus(agent)}
+                        {config.label}
                       </Badge>
-                    </div>
-                    {agent.currentTask && (
-                      <div className="border-t pt-2">
-                        <span className="text-muted-foreground text-xs">
-                          Working on:
-                        </span>
-                        <p className="truncate font-medium">
-                          {agent.currentTask.title}
-                        </p>
-                      </div>
-                    )}
-                    {agent.lastHeartbeat && (
-                      <div className="text-muted-foreground text-xs">
-                        Last seen:{" "}
-                        {new Date(agent.lastHeartbeat).toLocaleTimeString()}
-                      </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+
+                  <h3 className="mb-1 font-medium">{agent.name}</h3>
+                  <p className="text-muted-foreground text-sm">{agent.role}</p>
+
+                  <div className="mt-auto pt-4">
+                    {agent.currentTask ? (
+                      <p className="truncate text-xs">
+                        <span className="text-muted-foreground">Task: </span>
+                        {agent.currentTask.title}
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground text-xs">
+                        Last seen: {formatLastSeen(agent.lastHeartbeat)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </>
+  );
+};
+
+const AgentCardSkeleton = () => {
+  return (
+    <div className="flex w-52 flex-col rounded-lg border p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </div>
+      <Skeleton className="mb-1 h-5 w-20" />
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="mt-auto h-3 w-32 pt-4" />
+    </div>
   );
 };
 

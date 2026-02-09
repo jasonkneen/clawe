@@ -51,7 +51,7 @@ export const SquadSwitcher = () => {
               size={state === "collapsed" ? "lg" : "sm"}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground min-h-9 justify-center"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-5 items-center justify-center rounded-sm">
+              <div className="bg-brand flex aspect-square size-5 items-center justify-center rounded-sm text-white">
                 <Users className="size-3" />
               </div>
               <div className="flex min-w-0 flex-1 items-center gap-2 text-sm group-data-[collapsible=icon]:hidden">
