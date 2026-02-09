@@ -1,7 +1,7 @@
 services:
   openclaw:
     ports:
-      - "18789:18789"
+      - "18790:18789"
     volumes:
       - ./.openclaw:/data
       - ./.openclaw/logs:/tmp/openclaw

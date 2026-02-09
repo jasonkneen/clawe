@@ -37,6 +37,24 @@ const CURRENT_STEP = 3;
 
 type Step = "token" | "pairing" | "success";
 
+const DemoVideoPanel = () => {
+  const [videoReady, setVideoReady] = useState(false);
+
+  return (
+    <div className="relative flex h-full items-center justify-center overflow-hidden">
+      {!videoReady && (
+        <div className="bg-muted absolute inset-0 z-20 flex items-center justify-center">
+          <Spinner className="text-muted-foreground h-8 w-8" />
+        </div>
+      )}
+      <Image src="/telegram-bg.png" alt="" fill className="object-cover" />
+      <div className="relative z-10">
+        <DemoVideo onLoaded={() => setVideoReady(true)} />
+      </div>
+    </div>
+  );
+};
+
 export default function TelegramPage() {
   const router = useRouter();
   const { status, isLoading } = useAgencyStatus();
@@ -317,12 +335,7 @@ export default function TelegramPage() {
   return (
     <form onSubmit={handleTokenSubmit} className="flex flex-1 flex-col">
       <SetupRightPanelContent>
-        <div className="relative flex h-full items-center justify-center overflow-hidden">
-          <Image src="/telegram-bg.png" alt="" fill className="object-cover" />
-          <div className="relative z-10">
-            <DemoVideo />
-          </div>
-        </div>
+        <DemoVideoPanel />
       </SetupRightPanelContent>
       <div className="max-w-xl flex-1">
         <div className="mb-6 sm:mb-8">

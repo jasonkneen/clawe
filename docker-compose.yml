@@ -10,6 +10,9 @@ services:
       - NEXT_PUBLIC_CONVEX_URL=${CONVEX_URL}
       - OPENCLAW_URL=http://openclaw:18789
       - OPENCLAW_TOKEN=${OPENCLAW_TOKEN}
+      - OPENCLAW_STATE_DIR=/openclaw-data/config
+    volumes:
+      - openclaw-data:/openclaw-data:ro
     depends_on:
       openclaw:
         condition: service_healthy
@@ -19,6 +22,7 @@ services:
     build:
       context: .
       dockerfile: docker/openclaw/Dockerfile
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       - OPENCLAW_TOKEN=${OPENCLAW_TOKEN}
       - OPENCLAW_PORT=18789

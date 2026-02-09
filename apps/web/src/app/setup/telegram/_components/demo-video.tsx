@@ -2,8 +2,13 @@
 
 import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { cn } from "@clawe/ui/lib/utils";
 
-export const DemoVideo = () => {
+export interface DemoVideoProps {
+  onLoaded?: () => void;
+}
+
+export const DemoVideo = ({ onLoaded }: DemoVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
 
@@ -33,16 +38,19 @@ export const DemoVideo = () => {
         loop
         muted
         playsInline
+        preload="auto"
+        onLoadedData={onLoaded}
         className="max-h-[95vh] w-auto rounded-[2.5rem] shadow-2xl shadow-black/50"
       />
 
       {/* Pause/play overlay */}
       <div
-        className={`absolute inset-0 flex items-center justify-center rounded-[2.5rem] transition-opacity ${
+        className={cn(
+          "absolute inset-0 flex items-center justify-center rounded-[2.5rem] transition-opacity",
           paused
             ? "bg-black/30 opacity-100"
-            : "opacity-0 group-hover:opacity-100"
-        }`}
+            : "opacity-0 group-hover:opacity-100",
+        )}
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm">
           {paused ? (
