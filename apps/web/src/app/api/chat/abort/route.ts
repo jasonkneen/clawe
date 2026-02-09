@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGatewayClient } from "@clawe/shared/openclaw";
+import { getSharedClient } from "@clawe/shared/openclaw";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,10 +31,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const client = createGatewayClient();
-
   try {
-    await client.connect();
+    const client = await getSharedClient();
 
     await client.request("chat.abort", {
       sessionKey,
@@ -46,7 +44,5 @@ export async function POST(request: NextRequest) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
-  } finally {
-    client.close();
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Bot, User, Info } from "lucide-react";
 import { cn } from "@clawe/ui/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -23,7 +24,10 @@ export type ChatMessageProps = {
   className?: string;
 };
 
-export const ChatMessage = ({ message, className }: ChatMessageProps) => {
+export const ChatMessage = memo(function ChatMessage({
+  message,
+  className,
+}: ChatMessageProps) {
   const isUser = message.role === "user";
   const isContext = isContextMessage(message.content);
 
@@ -232,7 +236,7 @@ export const ChatMessage = ({ message, className }: ChatMessageProps) => {
       </div>
     </div>
   );
-};
+});
 
 const formatTime = (date: Date): string => {
   return date.toLocaleTimeString([], {

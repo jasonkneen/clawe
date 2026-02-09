@@ -27,31 +27,32 @@ export const ChatInputTextarea = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea based on content
+  const rafRef = useRef<number>(0);
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
 
-    // Calculate heights (text-sm with leading-relaxed + py-2 padding)
-    const lineHeight = 24;
-    const verticalPadding = 16; // py-2 = 8px top + 8px bottom
-    const minHeight = lineHeight * minRows + verticalPadding;
-    const maxHeight = lineHeight * maxRows + verticalPadding;
+      const lineHeight = 24;
+      const verticalPadding = 16;
+      const minHeight = lineHeight * minRows + verticalPadding;
+      const maxHeight = lineHeight * maxRows + verticalPadding;
 
-    // When empty, use fixed minimum height (avoids scrollHeight issues with placeholder)
-    if (!value.trim()) {
-      textarea.style.height = `${minHeight}px`;
-      return;
-    }
+      if (!value.trim()) {
+        textarea.style.height = `${minHeight}px`;
+        return;
+      }
 
-    // Reset height to auto to get the correct scrollHeight
-    textarea.style.height = "auto";
-
-    // Set the height based on content, clamped between min and max
-    const newHeight = Math.min(
-      Math.max(textarea.scrollHeight, minHeight),
-      maxHeight,
-    );
-    textarea.style.height = `${newHeight}px`;
+      // Reset to auto to get accurate scrollHeight, then clamp
+      textarea.style.height = "auto";
+      const newHeight = Math.min(
+        Math.max(textarea.scrollHeight, minHeight),
+        maxHeight,
+      );
+      textarea.style.height = `${newHeight}px`;
+    });
+    return () => cancelAnimationFrame(rafRef.current);
   }, [value, minRows, maxRows]);
 
   return (

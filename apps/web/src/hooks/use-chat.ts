@@ -49,6 +49,22 @@ const SYSTEM_MESSAGE_PATTERNS = [
   /---EXIT---/i,
   /clawe not found/i,
   /This file is the shared memory across all agent/i,
+  // Gateway events
+  /^GatewayRestart:/i,
+  /"kind":\s*"config-apply"/,
+  /"kind":\s*"config-patch"/,
+  /doctorHint/,
+  // Queued messages
+  /^\[Queued messages while agent was busy\]/i,
+  /^Queued #\d+/i,
+  // Cron results
+  /^System:\s*\[\d{4}-.*Cron:/i,
+  /HTTP 429 rate_limit_error/i,
+  // Telegram metadata in system context
+  /^\[Telegram .* id:\d+/,
+  /^\[message_id: \d+\]/,
+  /^\[Chat messages since your last reply/i,
+  /^\[Mon |^\[Tue |^\[Wed |^\[Thu |^\[Fri |^\[Sat |^\[Sun /i,
 ];
 
 const isSystemMessage = (content: string): boolean => {
@@ -101,6 +117,8 @@ export const useChat = ({
   >("idle");
   const [error, setError] = useState<Error | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<Message[]>(messages);
+  messagesRef.current = messages;
 
   const sendMessage = useCallback(
     async (text: string, attachments?: ChatAttachment[]) => {
@@ -138,7 +156,10 @@ export const useChat = ({
       try {
         // Build messages for API (include history)
         const apiMessages = [
-          ...messages.map((m) => ({ role: m.role, content: m.content })),
+          ...messagesRef.current.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
           { role: "user" as const, content: trimmed },
         ];
 
@@ -158,24 +179,38 @@ export const useChat = ({
           throw new Error("No response body");
         }
 
-        // Read text stream
+        // Read text stream with throttled UI updates
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let accumulated = "";
+        let rafId = 0;
+        let needsFlush = false;
+
+        const flushUpdate = () => {
+          rafId = 0;
+          needsFlush = false;
+          const content = accumulated;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content } : m)),
+          );
+        };
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           accumulated += decoder.decode(value, { stream: true });
+          needsFlush = true;
 
-          // Update assistant message
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, content: accumulated } : m,
-            ),
-          );
+          // Batch updates via rAF — at most one DOM update per frame
+          if (!rafId) {
+            rafId = requestAnimationFrame(flushUpdate);
+          }
         }
+
+        // Final flush for any remaining content
+        if (rafId) cancelAnimationFrame(rafId);
+        if (needsFlush) flushUpdate();
 
         setStatus("idle");
         onFinish?.();
@@ -190,7 +225,7 @@ export const useChat = ({
         onError?.(e);
       }
     },
-    [sessionKey, messages, onError, onFinish],
+    [sessionKey, onError, onFinish],
   );
 
   const loadHistory = useCallback(async () => {
@@ -198,7 +233,7 @@ export const useChat = ({
 
     try {
       const response = await axios.get<{ messages?: unknown[] }>(
-        `/api/chat/history?sessionKey=${encodeURIComponent(sessionKey)}&limit=200`,
+        `/api/chat/history?sessionKey=${encodeURIComponent(sessionKey)}&limit=50`,
       );
 
       const data = response.data;

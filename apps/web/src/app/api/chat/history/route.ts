@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGatewayClient } from "@clawe/shared/openclaw";
+import { getSharedClient } from "@clawe/shared/openclaw";
 import type { ChatHistoryResponse } from "@clawe/shared/openclaw";
 
 export const runtime = "nodejs";
@@ -28,10 +28,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const client = createGatewayClient();
-
   try {
-    await client.connect();
+    const client = await getSharedClient();
 
     const response = await client.request<ChatHistoryResponse>("chat.history", {
       sessionKey,
@@ -53,7 +51,5 @@ export async function GET(request: NextRequest) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
-  } finally {
-    client.close();
   }
 }

@@ -126,10 +126,14 @@ export function useAutoScroll(
     const viewport = getViewport(scrollRef.current);
     if (!viewport) return;
 
+    let rafId = 0;
     const observer = new MutationObserver(() => {
       // Only auto-scroll if user hasn't scrolled up
-      if (!userScrolledRef.current && isAtBottom) {
-        scrollToBottom("instant");
+      if (!userScrolledRef.current && isAtBottom && !rafId) {
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          scrollToBottom("instant");
+        });
       }
     });
 
@@ -139,7 +143,10 @@ export function useAutoScroll(
       characterData: true,
     });
 
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
   }, [enabled, isAtBottom, scrollToBottom]);
 
   return {

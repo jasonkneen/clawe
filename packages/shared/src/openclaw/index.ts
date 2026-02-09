@@ -28,6 +28,7 @@ export type {
 // Gateway Client
 export { GatewayClient, createGatewayClient } from "./gateway-client";
 export type { GatewayClientOptions } from "./gateway-client";
+export { getSharedClient } from "./shared-client";
 
 // Pairing
 export {
