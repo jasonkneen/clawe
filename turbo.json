@@ -25,7 +25,7 @@
       "cache": false
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["^build", "^check-types"]
     },
     "test": {
       "inputs": ["$TURBO_DEFAULT$", "**/*.spec.ts", "**/*.spec.tsx"]
