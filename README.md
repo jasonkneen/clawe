@@ -60,6 +60,7 @@ npx convex deploy
 ```
 
 This script will:
+
 - Create `.env` from `.env.example` if missing
 - Auto-generate a secure `OPENCLAW_TOKEN`
 - Validate all required environment variables
