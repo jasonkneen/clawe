@@ -4,6 +4,7 @@ import {
   checkHealth,
   getConfig,
   saveTelegramBotToken as saveTelegramBotTokenClient,
+  removeTelegramBotToken as removeTelegramBotTokenClient,
   probeTelegramToken,
 } from "@clawe/shared/openclaw";
 import { approveChannelPairingCode } from "@clawe/shared/openclaw";
@@ -39,4 +40,8 @@ export async function approvePairingCode(
   channel: string = "telegram",
 ) {
   return approveChannelPairingCode(channel, code);
+}
+
+export async function removeTelegramBot() {
+  return removeTelegramBotTokenClient();
 }

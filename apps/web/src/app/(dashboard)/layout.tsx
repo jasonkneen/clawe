@@ -26,16 +26,16 @@ const isNoPaddingRoute = (path: string) => path === "/board";
 const DashboardLayout = ({ children, header }: DashboardLayoutProps) => {
   const pathname = usePathname();
   const { isLoading } = useRequireOnboarding();
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => !isLockedSidebarRoute(pathname),
-  );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fullHeight = isFullHeightRoute(pathname);
   const noPadding = isNoPaddingRoute(pathname);
 
-  // Update sidebar state when route changes
+  // Force sidebar closed on locked routes
   useEffect(() => {
-    setSidebarOpen(!isLockedSidebarRoute(pathname));
+    if (isLockedSidebarRoute(pathname)) {
+      setSidebarOpen(false);
+    }
   }, [pathname]);
 
   if (isLoading) {

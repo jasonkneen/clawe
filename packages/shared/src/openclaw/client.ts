@@ -90,6 +90,19 @@ export async function saveTelegramBotToken(
   });
 }
 
+export async function removeTelegramBotToken(): Promise<
+  ToolResult<ConfigPatchResult>
+> {
+  return patchConfig({
+    channels: {
+      telegram: {
+        enabled: false,
+        botToken: null,
+      },
+    },
+  });
+}
+
 // Probe Telegram bot token directly via Telegram API
 export async function probeTelegramToken(
   botToken: string,

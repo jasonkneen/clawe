@@ -2,6 +2,7 @@
 export {
   checkHealth,
   saveTelegramBotToken,
+  removeTelegramBotToken,
   probeTelegramToken,
   getConfig,
   patchConfig,
