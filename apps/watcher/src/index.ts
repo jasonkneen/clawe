@@ -72,13 +72,14 @@ type RoutineInput = Pick<
 // Routine seed data (hardcoded for initial setup)
 const SEED_ROUTINES: RoutineInput[] = [
   {
-    title: "AI Scarcity Research",
-    description: "Research AI scarcity patterns and trends",
+    title: "Weekly Performance Review",
+    description:
+      "Review last week's content performance, engagement metrics, and campaign results. Identify top-performing pieces and areas for improvement.",
     priority: "normal",
     schedule: {
       type: "weekly",
-      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-      hour: 5,
+      daysOfWeek: [1],
+      hour: 9,
       minute: 0,
     },
     color: "emerald",
@@ -101,7 +102,7 @@ const SEED_ROUTINES: RoutineInput[] = [
     priority: "normal",
     schedule: {
       type: "weekly",
-      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      daysOfWeek: [1, 4],
       hour: 10,
       minute: 0,
     },
