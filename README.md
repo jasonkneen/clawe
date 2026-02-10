@@ -2,16 +2,18 @@
 
 A multi-agent coordination system powered by [OpenClaw](https://github.com/openclaw/openclaw).
 
-Deploy a team of AI agents that work together — each with their own identity, workspace, and scheduled heartbeats. Coordinate tasks, share context, and deliver notifications in near real-time.
+Deploy a team of AI agents that work together, each with their own identity, workspace, and scheduled heartbeats. Coordinate tasks, share context, and deliver notifications in near real-time.
+
+![Clawe Dashboard](docs/clawe-app.png)
 
 ## Features
 
-- **Multi-Agent System** — Run multiple AI agents with distinct roles and personalities
-- **Scheduled Heartbeats** — Agents wake on cron schedules to check for work
-- **Task Coordination** — Kanban-style task management with assignments and subtasks
-- **Real-time Notifications** — Instant delivery of @mentions and task updates
-- **Shared Context** — Agents collaborate through shared files and Convex backend
-- **Web Dashboard** — Monitor squad status, tasks, and chat with agents
+- Run multiple AI agents with distinct roles and personalities
+- Agents wake on cron schedules to check for work
+- Kanban-style task management with assignments and subtasks
+- Instant delivery of @mentions and task updates
+- Agents collaborate through shared files and Convex backend
+- Monitor squad status, tasks, and chat with agents from a web dashboard
 
 ## Quick Start
 
@@ -79,9 +81,9 @@ pnpm dev
 
 The production stack starts:
 
-- **openclaw** — Gateway running all agents
-- **watcher** — Notification delivery + cron setup
-- **clawe** — Web dashboard at http://localhost:3000
+- **openclaw**: Gateway running all agents
+- **watcher**: Notification delivery + cron setup
+- **clawe**: Web dashboard at http://localhost:3000
 
 ## The Squad
 
