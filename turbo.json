@@ -4,6 +4,7 @@
   "globalEnv": ["ENVIRONMENT"],
   "globalPassThroughEnv": [
     "CONVEX_URL",
+    "NEXT_PUBLIC_CONVEX_URL",
     "ANTHROPIC_API_KEY",
     "OPENAI_API_KEY",
     "OPENCLAW_URL",

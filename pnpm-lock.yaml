@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.1.18
+        version: 4.1.18
     devDependencies:
       dotenv-cli:
         specifier: ^11.0.0
@@ -69,6 +73,9 @@ importers:
       '@clawe/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tailwindcss/postcss':
+        specifier: ^4.1.18
+        version: 4.1.18
       '@tanstack/react-query':
         specifier: ^5.75.5
         version: 5.90.19(react@19.2.0)

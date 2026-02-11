@@ -6,6 +6,9 @@
       "env": [
         "ENVIRONMENT",
         "NODE_ENV",
+        "NEXT_PUBLIC_CONVEX_URL",
+        "OPENCLAW_URL",
+        "OPENCLAW_TOKEN",
         "INTERNAL_API_URL",
         "NEXT_PUBLIC_API_URL"
       ],
@@ -15,6 +18,9 @@
       "env": [
         "ENVIRONMENT",
         "NODE_ENV",
+        "NEXT_PUBLIC_CONVEX_URL",
+        "OPENCLAW_URL",
+        "OPENCLAW_TOKEN",
         "INTERNAL_API_URL",
         "NEXT_PUBLIC_API_URL"
       ]
