@@ -6,8 +6,7 @@
     "dev": "dotenv -e .env -- turbo run dev",
     "dev:local": "bash scripts/dev-local.sh",
     "setup:local": "bash scripts/setup-local.sh",
-    "dev:docker": "pnpm --filter @clawe/cli build && docker compose up --build openclaw",
-    "build:docker": "pnpm --filter @clawe/cli build && docker compose build --no-cache openclaw",
+
     "debug": "dotenv -e .env -- turbo run debug",
     "dev:web": "dotenv -e .env -- turbo run dev --filter=web",
     "convex:dev": "dotenv -e .env -- turbo run dev --filter=@clawe/backend",

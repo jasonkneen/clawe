@@ -78,7 +78,7 @@ export default function WelcomePage() {
                   Start it with:
                 </p>
                 <pre className="rounded-md bg-red-100 px-3 py-2 text-xs text-red-900 dark:bg-red-950/50 dark:text-red-300">
-                  sudo docker compose up -d openclaw
+                  pnpm dev:local
                 </pre>
                 <p className="text-xs text-red-600 dark:text-red-500">
                   This status will update automatically once the service is
